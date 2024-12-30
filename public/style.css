@@ -1,0 +1,162 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: "Protest Revolution", sans-serif;
+}
+
+/* Navbar */
+.nav-link:hover {
+    color: #1f33e7; 
+    background-color: rgba(21, 97, 220, 0.1); 
+}
+.navbar-brand{
+    margin-left: 20px;
+    font-size: 30px;
+}
+.dashboard{
+    background-color: rgba(216,229,245,255);
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.dashboard-image img {
+    max-width: 450px;
+    height: auto;
+    margin-right: 800px;
+}
+/* Fullscreen Container */
+.brand-container {
+    height: 100vh; /* Full viewport height */
+    width: 100%; /* Full width */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('./images/pexels-scottwebb-532566.jpg') no-repeat center center/cover; /* Background image */
+    position: relative;
+    overflow: hidden;
+}
+.brand img{
+    max-width: 400px;
+    height: auto;
+    margin-right: 70px;
+
+}
+
+.weather-container {
+    max-width: 600px;
+    margin: 50px auto;
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.weather-icon {
+    font-size: 50px;
+}
+
+/* Text Styling */
+.brand {
+    text-align: center;
+    color: #ffffff;
+    text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.7); /* Shadow effect */
+}
+
+.brand h1 {
+    font-size: 5rem; /* Adjust size for desktop */
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.brand p {
+    font-size: 1.5rem;
+    color: #076934;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+    .brand h1 {
+        font-size: 3rem; /* Adjust for smaller screens */
+    }
+
+    .brand p {
+        font-size: 1.2rem;
+    }
+}
+
+/* Swiper */
+.swiper {
+    width: 100%;
+    height: calc(100vh - 80px); /* Adjust height based on navbar */
+}
+.swiper-slide {
+    text-align: center;
+    font-size: 18px;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+}
+.swiper-slide img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+.slide-text {
+    color: aliceblue;
+    font-size: 3.5rem;
+    font-family: 'Jaro', sans-serif;
+    animation: fadeIn 2s ease-in-out;
+}
+
+/* Footer */
+.footer {
+    background: #343a40;
+    color: #fff;
+    padding: 20px 0;
+}
+.footer a {
+    color: #f39c12;
+    text-decoration: none;
+}
+.footer a:hover {
+    text-decoration: underline;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.sensor-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+
+
+.chart-container {
+    width: 100%;
+    height: 400px;
+    margin-bottom: 40px;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+}

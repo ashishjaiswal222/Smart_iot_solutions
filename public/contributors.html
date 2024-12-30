@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Our Team</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #4CAF50;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* About Us Section */
+        .team-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            margin-top: 30px;
+        }
+
+        .team-slide {
+            display: flex;
+            animation: slide 10s ease-in-out infinite; /* Adjust duration for smooth animation */
+        }
+
+        .team-member {
+            position: relative;
+            margin: 0 20px;
+            text-align: center;
+            width: 250px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            opacity: 0.9;
+        }
+
+        .team-member:hover {
+            transform: scale(1.05);
+            opacity: 1;
+        }
+
+        .team-member img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .team-member:hover img {
+            transform: scale(1.1);
+        }
+
+        .team-member h3 {
+            margin: 10px 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .team-member p {
+            font-size: 1rem;
+            color: #777;
+            margin-bottom: 10px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .team-member:hover p {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Animation for Sliding */
+        @keyframes slide {
+            0% {
+                transform: translateX(100%); /* Start from the right */
+            }
+            20% {
+                transform: translateX(0); /* Pause in the center */
+            }
+            40% {
+                transform: translateX(0); /* Continue to stay in the center */
+            }
+            60% {
+                transform: translateX(-100%); /* Move to the left */
+            }
+            100% {
+                transform: translateX(-100%); /* Keep out of view */
+            }
+        }
+
+        /* Pause Animation Class */
+        .paused {
+            animation-play-state: paused;
+        }
+
+        /* Dedication Section */
+        .dedication-container {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-top: 40px;
+        }
+
+        .dedication-container h2 {
+            color: #4CAF50;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .dedication-member {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            transition: all 0.3 s ease;
+        }
+
+        .dedication-member:hover {
+            background-color: #f1f1f1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dedication-member img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 20px;
+            float: left;
+        }
+
+        .dedication-member div {
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .dedication-member h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .dedication-member p {
+            font-size: 1rem;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .video-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 50px auto;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .video-container h2 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+            color: #4CAF50;
+            text-align: center;
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+            background: #222;
+            color: #fff;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .controls button {
+            background: #444;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .controls button:hover {
+            background: #666;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Meet Our Team</h1>
+</header>
+
+<div class="container">
+    <!-- About Us Section -->
+    <div class="section">
+        <h2>Our Dedicated Team Members</h2>
+        <div class="team-container">
+            <div class="team-slide">
+                <!-- Team Member 1 -->
+               
+
+                <!-- Team Member 2 -->
+                <div class="team-member">
+                    <img src="./images/ashishwhite.jpeg" alt="Team Member 2">
+                    <h3>Ashish Jaiswal</h3>
+                    <p>Project-Lead & Backend Developer</p>
+                    <p>Prototyped and Lead, Worked on building the server, APIs, and integrating real-time data updates.</p>
+                </div>
+
+                <!-- Team Member 3 -->
+                <div class="team-member">
+                    <img src="./images/dasrshan.jpeg" alt="Team Member 3">
+                    <h3>Darshan Singh</h3>
+                    <p>Technical & Hardware </p>
+                    <p>IOT expert .</p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <div class="video-container">
+        <video id="myVideo" autoplay muted controls>
+          <source  src="./images/Life Simplified with Connected Devices.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="controls">
+          <button id="playPause">Play/Pause</button>
+          <button id="muteUnmute">Mute/Unmute</button>
+          <button id="fullscreen">Fullscreen</button>
+        </div>
+        <h2>IOT explained</h2>
+      </div>
+    
+
+    <!-- Dedication Section -->
+    <div class="dedication-container">
+        <h2>Our Heartfelt Dedication</h2>
+        <div class="dedication-member">
+            <img src="./images/aptita2.jpeg" alt="Professor 1">
+            <div>
+                <h3>Prof. Arpita Mane</h3>
+                <p>Professor, Department of Computer Science</p>
+                <p>Guided us in understanding the theoretical concepts of IoT, helping in the hardware and software integration for the smart plant project.</p>
+            </div>
+        </div>
+
+        <!-- Add More Professors as needed -->
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 IOT GenZ | All Rights Reserved</p>
+</footer>
+
+<script>
+    const teamMembers = document.querySelectorAll('.team-member');
+    const teamSlide = document.querySelector('.team-slide');
+
+    teamMembers.forEach(member => {
+        member.addEventListener('mouseenter', () => {
+            teamSlide.classList.add('paused');
+        });
+
+        member.addEventListener('mouseleave', () => {
+            teamSlide.classList.remove('paused');
+        });
+    });
+
+    const video = document.getElementById("myVideo");
+    const playPauseBtn = document.getElementById("playPause");
+    const muteUnmuteBtn = document.getElementById("muteUnmute");
+    const fullscreenBtn = document.getElementById("fullscreen");
+
+    // Play/Pause functionality
+    playPauseBtn.addEventListener("click", () => {
+      if (video.paused) {
+        video.play();
+        playPauseBtn.textContent = "Pause";
+      } else {
+        video.pause();
+        playPauseBtn.textContent = "Play";
+      }
+    });
+
+    // Mute/Unmute functionality
+    muteUnmuteBtn.addEventListener("click", () => {
+      video.muted = !video.muted;
+      muteUnmuteBtn.textContent = video.muted ? "Unmute" : "Mute";
+    });
+
+    // Fullscreen functionality
+    fullscreenBtn.addEventListener("click", () => {
+      if (video.requestFullscreen) {
+        video.requestFullscreen();
+      } else if (video.webkitRequestFullscreen) {
+        video.webkitRequestFullscreen();
+      } else if (video.mozRequestFullScreen) {
+        video.mozRequestFullScreen();
+      } else if (video.msRequestFullscreen) {
+        video.msRequestFullscreen();
+      }
+    });
+
+    // Keyboard controls
+    document.addEventListener("keydown", (event) => {
+      switch (event.key.toLowerCase()) {
+        case " ":
+          // Play/Pause on Spacebar
+          if (video.paused) video.play();
+          else video.pause();
+          break;
+        case "m":
+          // Mute/Unmute on "M"
+          video.muted = !video.muted;
+          break;
+        case "f":
+          // Fullscreen on "F"
+          if (video.requestFullscreen) {
+            video.requestFullscreen();
+          }
+          break;
+      }
+    });
+</script>
+
+</body>
+</html>

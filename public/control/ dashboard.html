@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9fafb; }
+        .card { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); border-radius: 8px; padding: 16px; }
+        .status { font-weight: bold; }
+        .chart { width: 100%; height: 300px; }
+        .dot { fill: #4F46E5; transition: all 0.2s ease-in-out; }
+        .dot.motion { fill: #F59E0B; }
+    </style>
+</head>
+<body>
+    <h1 style="color: rgb(1, 110, 1); margin-left: 8px; margin-top: 6px; display: flex; font-weight: bolder;"> IOT GenZ </h1>
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold text-center mb-4">IoT Dashboard And Control Panel </h1>
+
+        <!-- WebSocket Connection Status -->
+        <p id="wsStatus" class="status text-green-500">WebSocket Status: Connected</p>
+
+        <!-- Status Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="card bg-white">
+                <h2 class="text-lg font-semibold">Object Location</h2>
+                <p id="objectLocation" class="text-gray-700">Calculating...</p>
+            </div>
+            <div class="card bg-white">
+                <h2 class="text-lg font-semibold">Ultrasonic Sensor Status</h2>
+                <p id="ultrasonicStatus" class="text-gray-700">No Object Detected</p>
+                <p id="ultrasonicDistance" class="text-gray-700">Distance: -- cm</p>
+            </div>
+            <div class="card bg-white">
+                <h2 class="text-lg font-semibold">Infrared Sensor Status</h2>
+                <p id="irMotion" class="text-gray-700">No Motion Detected</p>
+                <p id="irValue" class="text-gray-700">IR Value: --</p>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="card bg-white">
+                <h2 class="text-lg font-semibold">Distance vs Time</h2>
+                <svg id="distanceChart" class="chart"></svg>
+            </div>
+            <div class="card bg-white">
+                <h2 class="text-lg font-semibold">Motion Detection</h2>
+                <svg id="motionChart" class="chart"></svg>
+            </div>
+            <div style="margin: 20px;">
+                <h3 id="serverRuntimeText" style="font-family: Arial, sans-serif; color: #333;">
+                    Server Running Time: Initializing...
+                </h3>
+                <svg id="runtimeChart" style="border: 1px solid #ddd; background: #f9f9f9;"></svg>
+            </div>
+            <div>
+                <h3>Combined Data Visualization</h3>
+                <svg id="combinedChart" style="border: 1px solid #ddd; background: #f9f9f9;"></svg>
+            </div>
+            
+            
+            
+
+        </div>
+    </div>
+
+    <script>
+        // WebSocket Setup
+        const ws = new WebSocket('ws://localhost:3000');
+        const wsStatus = document.getElementById('wsStatus');
+
+        // Elements for Status Updates
+        const objectLocation = document.getElementById('objectLocation');
+        const ultrasonicStatus = document.getElementById('ultrasonicStatus');
+        const ultrasonicDistance = document.getElementById('ultrasonicDistance');
+        const irMotion = document.getElementById('irMotion');
+        const irValueDisplay = document.getElementById('irValue');
+
+        // SVG Elements for D3.js Charts
+        const distanceChartSvg = d3.select("#distanceChart");
+        const motionChartSvg = d3.select("#motionChart");
+
+        // Chart Configurations
+        const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+        const width = 600 - margin.left - margin.right;
+        const height = 300 - margin.top - margin.bottom;
+
+        const xScale = d3.scaleTime().range([0, width]);
+        const yScaleDistance = d3.scaleLinear().range([height, 0]).domain([0, 500]);  // Ultrasonic range: 0-500 cm
+        const yScaleMotion = d3.scaleLinear().range([height, 0]).domain([0, 1023]); // IR sensor range: 0-1023
+
+        const lineDistance = d3.line().x(d => xScale(d.timestamp)).y(d => yScaleDistance(d.distance));
+        const lineMotion = d3.line().x(d => xScale(d.timestamp)).y(d => yScaleMotion(d.irValue));
+
+        // Create SVG elements for charts
+        const distanceChart = distanceChartSvg
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        const motionChart = motionChartSvg
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Data Arrays for Distance and Motion
+        let distanceData = [];
+        let motionData = [];
+
+        // Axes for Charts
+        const xAxis = d3.axisBottom(xScale);
+        const yAxisDistance = d3.axisLeft(yScaleDistance);
+        const yAxisMotion = d3.axisLeft(yScaleMotion);
+
+        // Append axes to the charts
+        distanceChart.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(xAxis);
+
+        distanceChart.append("g")
+            .call(yAxisDistance);
+
+        motionChart.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(xAxis);
+
+        motionChart.append("g")
+            .call(yAxisMotion);
+
+        // WebSocket Events
+        ws.onopen = () => {
+            wsStatus.innerText = 'WebSocket Status: Connected';
+            wsStatus.classList.remove('text-red-500');
+            wsStatus.classList.add('text-green-500');
+        };
+
+        ws.onclose = () => {
+            wsStatus.innerText = 'WebSocket Status: Disconnected';
+            wsStatus.classList.remove('text-green-500');
+            wsStatus.classList.add('text-red-500');
+        };
+
+        ws.onerror = (err) => console.error('WebSocket Error:', err);
+
+        ws.onmessage = (event) => {
+            const message = event.data.trim();
+            const [label, value] = message.split(': ').map(item => item.trim());
+            const timestamp = new Date();
+
+            if (label === 'Distance') {
+    const distance = parseInt(value);
+    const timestamp = new Date().getTime(); // Assuming timestamp is in milliseconds
+    distanceData.push({ timestamp, distance });
+    if (distanceData.length > 20) distanceData.shift();
+
+    // Update scales
+    xScale.domain(d3.extent(distanceData, d => d.timestamp));
+    yScaleDistance.domain([0, 500]);
+
+    // Clear previous chart
+    distanceChart.selectAll("*").remove();
+
+    // Append gradient definition
+    distanceChart.append("defs")
+        .append("linearGradient")
+        .attr("id", "distanceGradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%")
+        .selectAll("stop")
+        .data([
+            { offset: "0%", color: "#4F46E5" },
+            { offset: "50%", color: "#6366F1" },
+            { offset: "100%", color: "#3B82F6" }
+        ])
+        .enter()
+        .append("stop")
+        .attr("offset", d => d.offset)
+        .attr("stop-color", d => d.color);
+
+    // Append glowing filter
+    distanceChart.append("defs")
+        .append("filter")
+        .attr("id", "glow")
+        .append("feGaussianBlur")
+        .attr("stdDeviation", "4.5")
+        .attr("result", "coloredBlur");
+
+    distanceChart.select("defs filter")
+        .append("feMerge")
+        .selectAll("feMergeNode")
+        .data(["coloredBlur", "SourceGraphic"])
+        .enter()
+        .append("feMergeNode")
+        .attr("in", d => d);
+
+    // Draw the path with gradient and animation
+    distanceChart.append("path")
+        .data([distanceData])
+        .attr("d", lineDistance)
+        .attr("fill", "none")
+        .attr("stroke", "url(#distanceGradient)")
+        .attr("stroke-width", 3)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("opacity", 0) // Start invisible
+        .transition()
+        .duration(1000) // Animation duration
+        .ease(d3.easeCubicInOut) // Smooth easing effect
+        .attr("opacity", 1) // Fade in the path
+        .attrTween("stroke-dasharray", function () {
+            const length = this.getTotalLength();
+            return function (t) {
+                return `${t * length} ${length}`;
+            };
+        })
+        .style("filter", "url(#glow)"); // Add glow effect
+
+    // Add circles for data points with animations
+    distanceChart.selectAll(".data-point")
+        .data(distanceData)
+        .enter()
+        .append("circle")
+        .attr("class", "data-point")
+        .attr("cx", d => xScale(d.timestamp))
+        .attr("cy", d => yScaleDistance(d.distance))
+        .attr("r", 0) // Start with no radius
+        .style("fill", "#F59E0B")
+        .style("stroke", "#E11D48")
+        .style("stroke-width", 2)
+        .style("filter", "url(#glow)") // Apply glow effect
+        .transition()
+        .duration(800)
+        .ease(d3.easeBounceOut) // Bouncy effect
+        .attr("r", 6);
+
+    // Add gridlines for better visualization
+    distanceChart.selectAll(".grid-line")
+        .data(yScaleDistance.ticks())
+        .enter()
+        .append("line")
+        .attr("class", "grid-line")
+        .attr("x1", 0)
+        .attr("x2", width)
+        .attr("y1", d => yScaleDistance(d))
+        .attr("y2", d => yScaleDistance(d))
+        .attr("stroke", "#E5E7EB")
+        .attr("stroke-width", 0.5)
+        .attr("stroke-dasharray", "4 4");
+
+    // Add X and Y axes
+    distanceChart.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(xAxis);
+
+    distanceChart.append("g")
+        .call(yAxisDistance);
+
+    // Add text labels for data points
+    distanceChart.selectAll(".label")
+        .data(distanceData)
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        .attr("x", d => xScale(d.timestamp))
+        .attr("y", d => yScaleDistance(d.distance) - 10)
+        .attr("text-anchor", "middle")
+        .style("fill", "#6B7280")
+        .style("font-size", "12px")
+        .text(d => `${d.distance} cm`)
+        .attr("opacity", 0)
+        .transition()
+        .duration(800)
+        .attr("opacity", 1);
+
+    // Update the status text
+    ultrasonicDistance.innerText = `Distance: ${distance} cm`;
+    ultrasonicStatus.innerText = distance < 500 ? 'Object Detected' : 'No Object Detected';
+    objectLocation.innerText = distance < 50 ? 'Very Close' : distance < 100 ? 'Nearby' : 'Far Away';
+} 
+           if (label === 'Distance') {
+    const distance = parseInt(value);
+    const timestamp = new Date().getTime();
+    distanceData.push({ timestamp, distance });
+
+    // Retain only the last 20 data points
+    if (distanceData.length > 20) distanceData.shift();
+
+    // Update scales
+    xScale.domain(d3.extent(distanceData, d => d.timestamp));
+    yScaleDistance.domain([0, 500]);
+
+    // Clear previous chart elements
+    distanceChart.selectAll("*").remove();
+
+    // Define gradient for the area chart
+    distanceChart.append("defs")
+        .append("linearGradient")
+        .attr("id", "areaGradient")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%")
+        .selectAll("stop")
+        .data([
+            { offset: "0%", color: "rgba(79, 70, 229, 0.8)" },
+            { offset: "50%", color: "rgba(79, 70, 229, 0.4)" },
+            { offset: "100%", color: "rgba(79, 70, 229, 0)" }
+        ])
+        .enter()
+        .append("stop")
+        .attr("offset", d => d.offset)
+        .attr("stop-color", d => d.color);
+
+    // Define the area generator
+    const area = d3.area()
+        .x(d => xScale(d.timestamp))
+        .y0(height) // Base of the area
+        .y1(d => yScaleDistance(d.distance)) // Top of the area
+        .curve(d3.curveMonotoneX); // Smooth curve
+
+    // Append the area chart
+    distanceChart.append("path")
+        .data([distanceData])
+        .attr("d", area)
+        .attr("fill", "url(#areaGradient)")
+        .attr("opacity", 0) // Start with opacity 0
+        .transition()
+        .duration(1000) // Animation duration
+        .ease(d3.easeCubicInOut)
+        .attr("opacity", 1); // Fade-in effect
+
+    // Add the line on top of the area
+    distanceChart.append("path")
+        .data([distanceData])
+        .attr("d", d3.line()
+            .x(d => xScale(d.timestamp))
+            .y(d => yScaleDistance(d.distance))
+            .curve(d3.curveMonotoneX))
+        .attr("fill", "none")
+        .attr("stroke", "#4F46E5")
+        .attr("stroke-width", 3)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-dasharray", function () {
+            return this.getTotalLength();
+        })
+        .attr("stroke-dashoffset", function () {
+            return this.getTotalLength();
+        })
+        .transition()
+        .duration(1000)
+        .ease(d3.easeCubicInOut)
+        .attr("stroke-dashoffset", 0); // Line animation
+
+    // Add circles for data points
+    distanceChart.selectAll(".data-point")
+        .data(distanceData)
+        .enter()
+        .append("circle")
+        .attr("class", "data-point")
+        .attr("cx", d => xScale(d.timestamp))
+        .attr("cy", d => yScaleDistance(d.distance))
+        .attr("r", 0) // Start with no radius
+        .style("fill", "#F59E0B")
+        .style("stroke", "#E11D48")
+        .style("stroke-width", 2)
+        .transition()
+        .duration(800)
+        .ease(d3.easeBounceOut)
+        .attr("r", 5); // Bouncy effect for circles
+
+    // Add X and Y axes
+    distanceChart.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(xAxis);
+
+    distanceChart.append("g")
+        .call(yAxisDistance);
+
+    // Update the status text
+    ultrasonicDistance.innerText = `Distance: ${distance} cm`;
+    ultrasonicStatus.innerText = distance < 500 ? 'Object Detected' : 'No Object Detected';
+    objectLocation.innerText = distance < 50 ? 'Very Close' : distance < 100 ? 'Nearby' : 'Far Away';
+}
+  else if (label === 'IR Value') {
+                const irValue = parseInt(value);
+                motionData.push({ timestamp, irValue });
+                if (motionData.length > 20) motionData.shift();
+
+                xScale.domain(d3.extent(motionData, d => d.timestamp));
+                yScaleMotion.domain([0, 1023]);
+
+                motionChart.selectAll("*").remove();
+                motionChart.append("g")
+    .selectAll(".dot")
+    .data(motionData)
+    .enter()
+    .append("circle")
+    .attr("class", "dot")
+    .attr("cx", d => xScale(d.timestamp))
+    .attr("cy", d => yScaleMotion(d.irValue))
+    .attr("r", 6)
+    .attr("fill", "url(#motionGradient)")
+    .attr("stroke", "#FFC107")
+    .attr("stroke-width", 2)
+    .style("filter", "drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.2))") // 3D Shadow
+    .transition()
+    .duration(500) // Animation for motion detection
+    .ease(d3.easeBounceOut)
+    .attr("r", d => d.irValue > 500 ? 8 : 6); // Highlight bigger size on motion
+
+                motionChart.append("g")
+                    .attr("transform", `translate(0,${height})`)
+                    .call(xAxis);
+
+                motionChart.append("g")
+                    .call(yAxisMotion);
+
+                irValueDisplay.innerText = `IR Value: ${irValue}`;
+                irMotion.innerText = irValue > 500 ? 'Motion Detected' : 'No Motion Detected';
+            }
+        };
+        // Simulating the server start time
+const serverStartTime = new Date(); // Record the server start time
+const runtimeData = []; // Array to hold runtime data
+
+// Create scales for the runtime chart
+const xScaleTime = d3.scaleLinear().range([0, width]);
+const yScaleRuntime = d3.scaleLinear().range([height, 0]);
+
+// Append an SVG for the runtime chart
+const runtimeChart = d3.select("#runtimeChart")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// Define line generators for seconds, minutes, and hours
+const lineSeconds = d3.line()
+    .x((d, i) => xScaleTime(i))
+    .y(d => yScaleRuntime(d.seconds))
+    .curve(d3.curveMonotoneX);
+
+const lineMinutes = d3.line()
+    .x((d, i) => xScaleTime(i))
+    .y(d => yScaleRuntime(d.minutes))
+    .curve(d3.curveMonotoneX);
+
+const lineHours = d3.line()
+    .x((d, i) => xScaleTime(i))
+    .y(d => yScaleRuntime(d.hours))
+    .curve(d3.curveMonotoneX);
+
+// Function to update the runtime chart
+function updateRuntimeChart() {
+    const now = new Date();
+    const elapsedTime = (now - serverStartTime) / 1000; // Elapsed time in seconds
+    const seconds = Math.floor(elapsedTime);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+
+    // Add new data point
+    runtimeData.push({ seconds, minutes, hours });
+    if (runtimeData.length > 50) runtimeData.shift(); // Keep last 50 records
+
+    // Update scales
+    xScaleTime.domain([0, runtimeData.length - 1]);
+    yScaleRuntime.domain([0, Math.max(...runtimeData.map(d => d.seconds))]);
+
+    // Clear old chart elements
+    runtimeChart.selectAll("*").remove();
+
+    // Add paths for seconds, minutes, and hours
+    runtimeChart.append("path")
+        .datum(runtimeData)
+        .attr("fill", "none")
+        .attr("stroke", "rgba(34, 197, 94, 1)")
+        .attr("stroke-width", 2)
+        .attr("d", lineSeconds);
+
+    runtimeChart.append("path")
+        .datum(runtimeData)
+        .attr("fill", "none")
+        .attr("stroke", "rgba(59, 130, 246, 1)")
+        .attr("stroke-width", 2)
+        .attr("d", lineMinutes);
+
+    runtimeChart.append("path")
+        .datum(runtimeData)
+        .attr("fill", "none")
+        .attr("stroke", "rgba(234, 88, 12, 1)")
+        .attr("stroke-width", 2)
+        .attr("d", lineHours);
+
+    // Add gradient backgrounds for better visualization
+    runtimeChart.append("defs").append("linearGradient")
+        .attr("id", "gradientSeconds")
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%")
+        .selectAll("stop")
+        .data([
+            { offset: "0%", color: "rgba(34, 197, 94, 0.8)" },
+            { offset: "100%", color: "rgba(34, 197, 94, 0.2)" }
+        ])
+        .enter()
+        .append("stop")
+        .attr("offset", d => d.offset)
+        .attr("stop-color", d => d.color);
+
+    // Update runtime text
+    d3.select("#serverRuntimeText")
+        .html(`Server Running Time:<br>Seconds: ${seconds}s<br>Minutes: ${minutes}m<br>Hours: ${hours}h`);
+}
+
+// Start updating the runtime chart every second
+setInterval(updateRuntimeChart, 1000);
+
+const combinedWidth = 900;
+    const combinedHeight = 500;
+    const combinedMargin = { top: 50, right: 100, bottom: 50, left: 50 };
+
+    // Create SVG container for the combined chart
+    const combinedSvg = d3.select("#combinedChart")
+        .attr("width", combinedWidth)
+        .attr("height", combinedHeight);
+
+    // Scales for the combined chart
+    const combinedXScale = d3.scaleTime().range([combinedMargin.left, combinedWidth - combinedMargin.right]);
+    const combinedYScaleRuntime = d3.scaleLinear().range([combinedHeight - combinedMargin.bottom, combinedMargin.top]); // Line chart
+    const combinedYScaleMotion = d3.scaleLinear().range([combinedHeight - combinedMargin.bottom, combinedHeight / 2]);  // Bar chart
+    const combinedYScaleDistance = d3.scaleLinear().range([combinedHeight / 2, combinedMargin.top]);             // Scatter plot
+
+    // Data arrays for runtime, motion, and distance
+    const combinedRuntimeData = [];
+    const combinedMotionData = [];
+    const combinedDistanceData = [];
+
+    // Axes
+    const combinedXAxis = d3.axisBottom(combinedXScale).ticks(10);
+    const combinedYAxisRuntime = d3.axisLeft(combinedYScaleRuntime);
+    const combinedYAxisMotion = d3.axisLeft(combinedYScaleMotion).ticks(5);
+
+    // Append axes groups
+    combinedSvg.append("g").attr("class", "combined-x-axis").attr("transform", `translate(0,${combinedHeight - combinedMargin.bottom})`);
+    combinedSvg.append("g").attr("class", "combined-y-axis-runtime").attr("transform", `translate(${combinedMargin.left},0)`);
+    combinedSvg.append("g").attr("class", "combined-y-axis-motion").attr("transform", `translate(${combinedMargin.left},0)`);
+
+    // Tooltip for displaying data
+    const combinedTooltip = d3.select("body")
+        .append("div")
+        .style("position", "absolute")
+        .style("padding", "10px")
+        .style("background", "rgba(0,0,0,0.7)")
+        .style("color", "#fff")
+        .style("border-radius", "4px")
+        .style("display", "none");
+
+    // Function to update the combined chart
+    function updateCombinedChart() {
+        const currentTime = new Date();
+        const elapsedSeconds = Math.floor((currentTime - serverStartTime) / 1000);
+
+        // Simulate data for motion and distance
+        const simulatedMotionValue = Math.random() * 1023; // Simulated motion value
+        const simulatedDistanceValue = Math.random() * 500; // Simulated distance value
+
+        // Add new data points
+        combinedRuntimeData.push({ time: currentTime, seconds: elapsedSeconds });
+        combinedMotionData.push({ time: currentTime, value: simulatedMotionValue });
+        combinedDistanceData.push({ time: currentTime, value: simulatedDistanceValue });
+
+        // Keep only the last 50 records
+        if (combinedRuntimeData.length > 50) combinedRuntimeData.shift();
+        if (combinedMotionData.length > 50) combinedMotionData.shift();
+        if (combinedDistanceData.length > 50) combinedDistanceData.shift();
+
+        // Update scales
+        combinedXScale.domain(d3.extent(combinedRuntimeData, d => d.time));
+        combinedYScaleRuntime.domain([0, d3.max(combinedRuntimeData, d => d.seconds)]);
+        combinedYScaleMotion.domain([0, 1023]);
+        combinedYScaleDistance.domain([0, 500]);
+
+        // Clear existing visuals
+        combinedSvg.selectAll(".combined-line-runtime").remove();
+        combinedSvg.selectAll(".combined-bar-motion").remove();
+        combinedSvg.selectAll(".combined-dot-distance").remove();
+
+        // Draw runtime line chart
+        combinedSvg.append("path")
+            .datum(combinedRuntimeData)
+            .attr("class", "combined-line-runtime")
+            .attr("fill", "none")
+            .attr("stroke", "#4F46E5")
+            .attr("stroke-width", 2)
+            .attr("d", d3.line()
+                .x(d => combinedXScale(d.time))
+                .y (d => combinedYScaleRuntime(d.seconds))
+                .curve(d3.curveMonotoneX));
+
+        // Draw motion bar chart
+        combinedSvg.selectAll(".combined-bar-motion")
+            .data(combinedMotionData)
+            .enter()
+            .append("rect")
+            .attr("class", "combined-bar-motion")
+            .attr("x", d => combinedXScale(d.time) - 5)
+            .attr("y", d => combinedYScaleMotion(d.value))
+            .attr("width", 10)
+            .attr("height", d => combinedHeight - combinedMargin.bottom - combinedYScaleMotion(d.value))
+            .attr("fill", "rgba(234, 88, 12, 0.7)");
+
+        // Draw distance scatter plot
+        combinedSvg.selectAll(".combined-dot-distance")
+            .data(combinedDistanceData)
+            .enter()
+            .append("circle")
+            .attr("class", "combined-dot-distance")
+            .attr("cx", d => combinedXScale(d.time))
+            .attr("cy", d => combinedYScaleDistance(d.value))
+            .attr("r", 5)
+            .attr("fill", "#34D399")
+            .on("mouseover", (e, d) => {
+                combinedTooltip.style("display", "block")
+                    .html(`Time: ${d.time}<br>Distance: ${d.value.toFixed(2)} cm`);
+            })
+            .on("mousemove", e => {
+                combinedTooltip.style("top", `${e.pageY - 20}px`).style("left", `${e.pageX + 20}px`);
+            })
+            .on("mouseout", () => combinedTooltip.style("display", "none"));
+
+        // Update axes
+        combinedSvg.select(".combined-x-axis").call(combinedXAxis);
+        combinedSvg.select(".combined-y-axis-runtime").call(combinedYAxisRuntime);
+    }
+
+    // Update combined chart every second
+    setInterval(updateCombinedChart, 1000);
+
+    </script>
+</body>
+</html>

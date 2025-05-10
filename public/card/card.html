@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hardware Specifications</title>
+    <link rel="stylesheet" href="card.css">
+</head>
+<body>
+    <div>
+    <!-- Main Heading -->
+    <header>
+        <h1 class="main-heading" style="font-size: 3rem;">All the Hardware Components Used</h1>
+        <p class="tagline" style="font-size: 1.8rem;">"Empowering the world with smarter IoT solutions!"</p>
+    </header>
+
+    <!-- About Us Section -->
+    <div class="section">
+        <h2>About Us</h2>
+        <p>
+            We are dedicated to providing cutting-edge IoT solutions that simplify life and enhance productivity.
+            With a wide range of hardware and software tools, we aim to bridge the gap between technology and real-world applications.
+            Our mission is to empower innovators with high-quality resources for smarter, connected systems.
+        </p>
+    </div>
+
+    <!-- Additional Content Section -->
+    <div class="section">
+        <h2>Why Choose Us?</h2>
+        <p>
+            Our comprehensive IoT ecosystem ensures that every component is reliable and efficient. From advanced microcontrollers
+            like Arduino and ESP32 to smart sensors and efficient water pumps, we provide all the essentials to bring your IoT projects to life.
+            Join us in shaping the future of connected technology!
+        </p>
+    </div>
+
+    <!-- Card Section -->
+    <div class="card-container"> 
+        <!-- Card 1: Arduino UNO -->
+        <div class="card">
+            <img src="./images/arduino.jpg" alt="Arduino UNO">
+            <div class="card-content">
+                <h3>Arduino UNO</h3>
+                <p>The Arduino UNO is a microcontroller board based on the ATmega328P. It is easy to use, perfect for beginners, and widely used in IoT and electronics projects.</p>
+                <div class="more-info">
+                    <p>Specifications:</p>
+                    <ul>
+                        <li>Microcontroller: ATmega328P</li>
+                        <li>Operating Voltage: 5V</li>
+                        <li>Input Voltage: 7-12V</li>
+                        <li>Digital I/O Pins: 14 (6 PWM outputs)</li>
+                        <li>Analog Input Pins: 6</li>
+                    </ul>
+                </div>
+                <a href="javascript:void(0)" class="btn" onclick="toggleInfo(this)">Read More</a>
+            </div>
+        </div>
+
+        <!-- Card 2: ESP32 -->
+        <div class="card">
+            <img src="./images/esp32.webp" alt="ESP32">
+            <div class="card-content">
+                <h3>ESP32</h3>
+                <p>The ESP32 is a low-cost, low-power system-on-chip microcontroller with integrated Wi-Fi and Bluetooth capabilities, making it ideal for IoT projects.</p>
+                <div class="more-info">
+                    <p>Specifications:</p>
+                    <ul>
+                        <li>Processor: Dual-core Xtensa LX6</li>
+                        <li>Clock Speed: Up to 240 MHz</li>
+                        <li>Wireless: Wi-Fi 802.11 b/g/n, Bluetooth 4.2</li>
+                        <li>GPIO Pins: 34</li>
+                        <li>ADC Channels: 18</li>
+                    </ul>
+                </div>
+                <a href="javascript:void(0)" class="btn" onclick="toggleInfo(this)">Read More</a>
+            </div>
+        </div>
+
+        <!-- Card 3: Soil Moisture Sensors -->
+        <div class="card">
+            <img src="./images/moisture.jpg" alt="Soil Moisture Sensors">
+            <div class="card-content">
+                <h3>Soil Moisture Sensors</h3>
+                <p>Soil moisture sensors are used to measure the volumetric water content in the soil. They are essential for smart irrigation and agricultural applications.</p>
+                <div class="more-info">
+                    <p>Specifications:</p>
+                    <ul>
+                        <li>Voltage: 3.3V to 5V</li>
+                        <li>Current: Less than 20mA</li>
+                        <li>Measurement Range: 0% to 100% soil moisture</li>
+                        <li>Output: Analog and digital</li>
+                    </ul>
+                </div>
+                <a href="javascript:void(0)" class="btn" onclick="toggleInfo(this)">Read More</a>
+            </div>
+        </div>
+
+        <!-- Card 4: Ultrasonic Sensors -->
+        <div class="card">
+            <img src="./images/ultrasonic.jpeg" alt="Ultrasonic Sensors">
+            <div class="card-content">
+                <h3>Ultrasonic Sensors</h3>
+                <p>Ultrasonic sensors measure the distance to an object using ultrasonic waves. They are commonly used in robotics, security, and distance monitoring systems.</p>
+                <div class="more-info">
+                    <p>Specifications:</p>
+                    <ul>
+                        <li>Operating Voltage: 5V</li>
+                        <li>Frequency: 40 kHz</li>
+                        <li>Measurement Range: 2cm to 400cm</li>
+                        <li>Accuracy: ±3mm</li>
+                    </ul>
+                </div>
+                <a href="javascript:void(0)" class="btn" onclick="toggleInfo(this)">Read More</a>
+            </div>
+        </div>
+
+        <!-- Card 5: Water Motor Pump -->
+        <div class="card">
+            <img src="./images/moter.webp" alt="Water Motor Pump">
+            <div class="card-content">
+                <h3>Water Motor Pump</h3>
+                <p>Water motor pumps are essential components for irrigation systems, providing water flow for agricultural and household applications.</p>
+                <div class="more-info">
+                    <p>Specifications:</p>
+                    <ul>
+                        <li>Voltage: 12V</li>
+                        <li>Flow Rate: 2-3 liters per minute</li>
+                        <li>Power: 0.5 HP</li>
+                        <li>Material: Anti-corrosion housing</li>
+                    </ul>
+                </div>
+                <a href="javascript:void(0)" class="btn" onclick="toggleInfo(this)">Read More</a>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="card.js"></script>
+</body>
+</html>
